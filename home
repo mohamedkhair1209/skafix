@@ -1,0 +1,28 @@
+import React from 'react';
+import { useLanguage } from '../components/LanguageContext';
+import HeroSection from '../components/home/HeroSection';
+import IntroSection from '../components/home/IntroSection';
+import WhyChooseUs from '../components/home/WhyChooseUs';
+import QuickLinks from '../components/home/QuickLinks';
+
+export default function Home() {
+  const { t } = useLanguage();
+
+  // Set page title and meta
+  React.useEffect(() => {
+    document.title = t.seo.homeTitle;
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc) {
+      metaDesc.setAttribute('content', t.seo.homeDesc);
+    }
+  }, [t]);
+
+  return (
+    <div>
+      <HeroSection />
+      <IntroSection />
+      <WhyChooseUs />
+      <QuickLinks />
+    </div>
+  );
+}
