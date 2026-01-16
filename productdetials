@@ -1,0 +1,230 @@
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
+import { useLanguage } from '../components/LanguageContext';
+import { base44 } from '@/api/base44Client';
+import { useQuery } from '@tanstack/react-query';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { 
+  ArrowRight, ArrowLeft, ChevronLeft, ChevronRight, Package, Loader2,
+  Scale, Layers, Ruler, Weight, Wrench, Shield, MessageCircle
+} from 'lucide-react';
+import { motion } from 'framer-motion';
+
+export default function ProductDetail() {
+  const { t, language, isRTL } = useLanguage();
+  const urlParams = new URLSearchParams(window.location.search);
+  const productId = urlParams.get('id');
+  const BackIcon = isRTL ? ChevronRight : ChevronLeft;
+  const ArrowIcon = isRTL ? ArrowLeft : ArrowRight;
+
+  const { data: product, isLoading } = useQuery({
+    queryKey: ['product', productId],
+    queryFn: () => base44.entities.Product.filter({ id: productId }),
+    select: (data) => data?.[0],
+    enabled: !!productId,
+  });
+
+  const { data: relatedProducts = [] } = useQuery({
+    queryKey: ['relatedProducts', product?.category],
+    queryFn: () => base44.entities.Product.filter({ category: product?.category }),
+    enabled: !!product?.category,
+    select: (data) => data?.filter(p => p.id !== productId)?.slice(0, 3) || [],
+  });
+
+  const specifications = [
+    { key: 'weight', icon: Weight, label: t.productDetail.weight, value: product?.weight },
+    { key: 'material', icon: Layers, label: t.productDetail.material, value: product?.material },
+    { key: 'dimensions', icon: Ruler, label: t.productDetail.dimensions, value: product?.dimensions },
+    { key: 'capacity', icon: Scale, label: t.productDetail.capacity, value: product?.capacity },
+    { key: 'finish', icon: Wrench, label: t.productDetail.finish, value: product?.finish },
+    { key: 'standards', icon: Shield, label: t.productDetail.standards, value: product?.standards },
+  ].filter(spec => spec.value);
+
+  const whatsappNumber = '+963958481929';
+  const productName = language === 'ar' ? product?.name_ar : product?.name_en;
+  const whatsappMessage = encodeURIComponent(
+    language === 'ar' 
+      ? `مرحباً، أود الاستفسار عن المنتج: ${productName}`
+      : `Hello, I would like to inquire about: ${productName}`
+  );
+  const whatsappLink = `https://wa.me/${whatsappNumber.replace(/\+/g, '')}?text=${whatsappMessage}`;
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+      </div>
+    );
+  }
+
+  if (!product) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4">
+        <Package className="w-16 h-16 text-slate-300" />
+        <p className="text-xl text-slate-500">{t.products.noProducts}</p>
+        <Link to={createPageUrl('Products')}>
+          <Button>{t.productDetail.backToProducts}</Button>
+        </Link>
+      </div>
+    );
+  }
+
+  return (
+    <div className={isRTL ? 'text-right' : ''}>
+      {/* Breadcrumb */}
+      <div className="bg-slate-50 border-b">
+        <div className="max-w-7xl mx-auto px-4 py-4">
+          <Link
+            to={createPageUrl('Products')}
+            className={`inline-flex items-center gap-2 text-slate-600 hover:text-blue-600 transition-colors ${isRTL ? 'flex-row-reverse' : ''}`}
+          >
+            <BackIcon className="w-5 h-5" />
+            <span>{t.productDetail.backToProducts}</span>
+          </Link>
+        </div>
+      </div>
+
+      {/* Product Section */}
+      <section className="py-16 bg-white">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className={`grid lg:grid-cols-2 gap-12 ${isRTL ? 'lg:grid-flow-dense' : ''}`}>
+            {/* Image */}
+            <motion.div
+              initial={{ opacity: 0, x: isRTL ? 50 : -50 }}
+              animate={{ opacity: 1, x: 0 }}
+              className={isRTL ? 'lg:col-start-2' : ''}
+            >
+              <div className="relative aspect-square rounded-3xl overflow-hidden bg-slate-100">
+                {product.image_url ? (
+                  <img
+                    src={product.image_url}
+                    alt={productName}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <Package className="w-24 h-24 text-slate-300" />
+                  </div>
+                )}
+                {product.category && (
+                  <Badge className="absolute top-6 right-6 bg-blue-600 text-white text-lg px-4 py-2">
+                    {t.products[product.category] || product.category}
+                  </Badge>
+                )}
+              </div>
+            </motion.div>
+
+            {/* Details */}
+            <motion.div
+              initial={{ opacity: 0, x: isRTL ? -50 : 50 }}
+              animate={{ opacity: 1, x: 0 }}
+              className={isRTL ? 'lg:col-start-1' : ''}
+            >
+              <h1 className="text-4xl md:text-5xl font-bold text-slate-900 mb-6">
+                {productName}
+              </h1>
+              
+              <p className="text-lg text-slate-600 leading-relaxed mb-8">
+                {language === 'ar' ? product.description_ar : product.description_en}
+              </p>
+
+              {product.price && (
+                <div className="bg-slate-50 rounded-2xl p-6 mb-8">
+                  <span className="text-slate-500 block mb-1">{t.productDetail.price}</span>
+                  <span className="text-4xl font-bold text-blue-600">{product.price}</span>
+                </div>
+              )}
+
+              {/* CTA Buttons */}
+              <div className={`flex flex-col sm:flex-row gap-4 mb-10 ${isRTL ? 'sm:flex-row-reverse' : ''}`}>
+                <Link to={createPageUrl('Contact')} className="flex-1">
+                  <Button className={`w-full btn-primary text-white py-6 text-lg rounded-xl ${isRTL ? 'flex-row-reverse' : ''}`}>
+                    {t.productDetail.requestQuote}
+                    <ArrowIcon className={`w-5 h-5 ${isRTL ? 'mr-2' : 'ml-2'}`} />
+                  </Button>
+                </Link>
+                <a href={whatsappLink} target="_blank" rel="noopener noreferrer" className="flex-1">
+                  <Button variant="outline" className={`w-full py-6 text-lg rounded-xl border-2 border-green-500 text-green-600 hover:bg-green-50 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                    <MessageCircle className={`w-5 h-5 ${isRTL ? 'ml-2' : 'mr-2'}`} />
+                    {t.productDetail.orderWhatsApp}
+                  </Button>
+                </a>
+              </div>
+
+              {/* Specifications */}
+              {specifications.length > 0 && (
+                <div>
+                  <h2 className="text-2xl font-bold text-slate-900 mb-6">
+                    {t.productDetail.specifications}
+                  </h2>
+                  <div className="grid grid-cols-2 gap-4">
+                    {specifications.map((spec, idx) => (
+                      <div key={idx} className="bg-slate-50 rounded-xl p-4">
+                        <div className={`flex items-center gap-3 mb-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                          <spec.icon className="w-5 h-5 text-blue-600" />
+                          <span className="text-sm text-slate-500">{spec.label}</span>
+                        </div>
+                        <span className="font-semibold text-slate-900">{spec.value}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* Related Products */}
+      {relatedProducts.length > 0 && (
+        <section className="py-16 bg-slate-50">
+          <div className="max-w-7xl mx-auto px-4">
+            <h2 className="text-3xl font-bold text-slate-900 mb-10">
+              {t.productDetail.relatedProducts}
+            </h2>
+            <div className="grid md:grid-cols-3 gap-8">
+              {relatedProducts.map((relProduct, idx) => (
+                <motion.div
+                  key={relProduct.id}
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.1 }}
+                  className="bg-white rounded-2xl overflow-hidden shadow-lg card-hover"
+                >
+                  <div className="h-48 overflow-hidden bg-slate-100">
+                    {relProduct.image_url ? (
+                      <img
+                        src={relProduct.image_url}
+                        alt={language === 'ar' ? relProduct.name_ar : relProduct.name_en}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <Package className="w-12 h-12 text-slate-300" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="p-6">
+                    <h3 className="text-lg font-bold text-slate-900 mb-2">
+                      {language === 'ar' ? relProduct.name_ar : relProduct.name_en}
+                    </h3>
+                    {relProduct.price && (
+                      <p className="text-xl font-bold text-blue-600 mb-4">{relProduct.price}</p>
+                    )}
+                    <Link to={createPageUrl(`ProductDetail?id=${relProduct.id}`)}>
+                      <Button variant="outline" className="w-full rounded-xl">
+                        {t.products.viewDetails}
+                      </Button>
+                    </Link>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+    </div>
+  );
+}
