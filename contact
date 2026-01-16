@@ -1,0 +1,418 @@
+import React, { useState } from 'react';
+import { useLanguage } from '../components/LanguageContext';
+import { base44 } from '@/api/base44Client';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { 
+  MapPin, Phone, Mail, Clock, Send, CheckCircle, AlertCircle,
+  Loader2, ChevronDown, ChevronUp, MessageCircle
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+
+export default function Contact() {
+  const { t, isRTL } = useLanguage();
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    subject: '',
+    message: '',
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState(null);
+  const [openFaq, setOpenFaq] = useState(null);
+
+  React.useEffect(() => {
+    document.title = t.seo.contactTitle;
+  }, [t]);
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setSubmitStatus(null);
+
+    await base44.entities.ContactSubmission.create({
+      name: formData.name,
+      email: formData.email,
+      phone: formData.phone,
+      subject: formData.subject,
+      message: formData.message,
+      status: 'new',
+    });
+
+    setSubmitStatus('success');
+    setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
+    setIsSubmitting(false);
+  };
+
+  const faqs = [
+    {
+      q: isRTL ? 'ما هي أنواع المشاريع التي تتعاملون معها؟' : 'What types of projects do you handle?',
+      a: isRTL 
+        ? 'نتعامل مع مجموعة واسعة من المشاريع الصناعية بما في ذلك التصنيع المخصص وتصنيع المعادن والتشغيل الدقيق وعمليات الإنتاج واسعة النطاق.'
+        : 'We handle a wide range of industrial projects including custom manufacturing, metal fabrication, precision machining, and large-scale production runs.',
+    },
+    {
+      q: isRTL ? 'ما هي المدة التي يستغرقها المشروع النموذجي؟' : 'How long does a typical project take?',
+      a: isRTL
+        ? 'تختلف الجداول الزمنية للمشروع بناءً على التعقيد والنطاق. قد تستغرق أعمال التصنيع البسيطة بضعة أيام، بينما قد تستغرق مشاريع التصنيع المعقدة عدة أسابيع.'
+        : 'Project timelines vary based on complexity and scope. Simple fabrication jobs may take a few days, while complex manufacturing projects can take several weeks.',
+    },
+    {
+      q: isRTL ? 'هل تقدمون عروض أسعار؟' : 'Do you provide quotes?',
+      a: isRTL
+        ? 'نعم! نقدم عروض أسعار مفصلة وغير ملزمة لجميع المشاريع. ما عليك سوى الاتصال بنا مع مواصفاتك أو رسوماتك أو متطلباتك.'
+        : 'Yes! We provide detailed, no-obligation quotes for all projects. Simply contact us with your specifications, drawings, or requirements.',
+    },
+    {
+      q: isRTL ? 'ما هي معايير الجودة التي تتبعونها؟' : 'What quality standards do you follow?',
+      a: isRTL
+        ? 'نحن حاصلون على شهادة ISO 9001 ونتبع معايير الجودة الدولية. يخضع كل مشروع للفحص والاختبار الصارم قبل التسليم.'
+        : 'We are ISO 9001 certified and follow international quality standards. Every project undergoes rigorous inspection and testing before delivery.',
+    },
+    {
+      q: isRTL ? 'هل يمكنكم العمل بتصاميم مخصصة؟' : 'Can you work with custom designs?',
+      a: isRTL
+        ? 'بالتأكيد! نحن متخصصون في الأعمال المخصصة. سواء كان لديك رسومات CAD مفصلة أو مجرد مفهوم، يمكن لفريقنا الهندسي العمل معك.'
+        : 'Absolutely! We specialize in custom work. Whether you have detailed CAD drawings or just a concept, our engineering team can work with you.',
+    },
+  ];
+
+  const whatsappNumber = '+963958481929';
+  const whatsappMessage = encodeURIComponent(
+    isRTL ? 'مرحباً، أود الاستفسار عن خدماتكم' : 'Hello, I would like to inquire about your services'
+  );
+  const whatsappLink = `https://wa.me/${whatsappNumber.replace(/\+/g, '')}?text=${whatsappMessage}`;
+
+  return (
+    <div className={isRTL ? 'text-right' : ''}>
+      {/* Hero Section */}
+      <section className="relative py-24 bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 overflow-hidden">
+        <div className="absolute inset-0">
+          <div className="absolute top-20 right-20 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl" />
+          <div className="absolute bottom-20 left-20 w-72 h-72 bg-orange-500/10 rounded-full blur-3xl" />
+        </div>
+        <div className="max-w-7xl mx-auto px-4 relative">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="max-w-3xl"
+          >
+            <span className="text-blue-400 font-semibold text-sm uppercase tracking-wider">
+              {isRTL ? 'تواصل معنا' : 'Get in Touch'}
+            </span>
+            <h1 className="text-5xl md:text-6xl font-bold text-white mt-4 mb-6">
+              {t.contact.title}
+            </h1>
+            <p className="text-xl text-slate-300">
+              {t.contact.subtitle}
+            </p>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Main Content */}
+      <section className="py-24 bg-white">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className={`grid lg:grid-cols-2 gap-16 ${isRTL ? 'lg:grid-flow-dense' : ''}`}>
+            {/* Contact Form */}
+            <motion.div
+              initial={{ opacity: 0, x: isRTL ? 50 : -50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              className={isRTL ? 'lg:col-start-2' : ''}
+            >
+              <div className="bg-white rounded-3xl shadow-xl p-8 border border-slate-100">
+                <h2 className="text-3xl font-bold text-slate-900 mb-2">
+                  {t.contact.formTitle}
+                </h2>
+                <p className="text-slate-600 mb-8">
+                  {t.contact.formSubtitle}
+                </p>
+
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <div>
+                      <Label htmlFor="name" className="text-slate-700 font-medium mb-2 block">
+                        {t.contact.nameLabel} *
+                      </Label>
+                      <Input
+                        id="name"
+                        name="name"
+                        value={formData.name}
+                        onChange={handleChange}
+                        required
+                        className={`h-12 rounded-xl ${isRTL ? 'text-right' : ''}`}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="email" className="text-slate-700 font-medium mb-2 block">
+                        {t.contact.emailLabel} *
+                      </Label>
+                      <Input
+                        id="email"
+                        name="email"
+                        type="email"
+                        value={formData.email}
+                        onChange={handleChange}
+                        required
+                        className={`h-12 rounded-xl ${isRTL ? 'text-right' : ''}`}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <div>
+                      <Label htmlFor="phone" className="text-slate-700 font-medium mb-2 block">
+                        {t.contact.phoneLabel}
+                      </Label>
+                      <Input
+                        id="phone"
+                        name="phone"
+                        value={formData.phone}
+                        onChange={handleChange}
+                        className="h-12 rounded-xl"
+                        dir="ltr"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="subject" className="text-slate-700 font-medium mb-2 block">
+                        {t.contact.subjectLabel} *
+                      </Label>
+                      <Input
+                        id="subject"
+                        name="subject"
+                        value={formData.subject}
+                        onChange={handleChange}
+                        required
+                        className={`h-12 rounded-xl ${isRTL ? 'text-right' : ''}`}
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="message" className="text-slate-700 font-medium mb-2 block">
+                      {t.contact.messageLabel} *
+                    </Label>
+                    <Textarea
+                      id="message"
+                      name="message"
+                      value={formData.message}
+                      onChange={handleChange}
+                      required
+                      rows={5}
+                      className={`rounded-xl resize-none ${isRTL ? 'text-right' : ''}`}
+                    />
+                  </div>
+
+                  {submitStatus && (
+                    <div className={`flex items-center gap-3 p-4 rounded-xl ${submitStatus === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'} ${isRTL ? 'flex-row-reverse' : ''}`}>
+                      {submitStatus === 'success' ? (
+                        <CheckCircle className="w-5 h-5" />
+                      ) : (
+                        <AlertCircle className="w-5 h-5" />
+                      )}
+                      <span>
+                        {submitStatus === 'success' ? t.contact.successMessage : t.contact.errorMessage}
+                      </span>
+                    </div>
+                  )}
+
+                  <Button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className={`w-full btn-primary text-white py-6 text-lg rounded-xl ${isRTL ? 'flex-row-reverse' : ''}`}
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className={`w-5 h-5 animate-spin ${isRTL ? 'ml-2' : 'mr-2'}`} />
+                        {t.contact.sending}
+                      </>
+                    ) : (
+                      <>
+                        <Send className={`w-5 h-5 ${isRTL ? 'ml-2' : 'mr-2'}`} />
+                        {t.contact.submitBtn}
+                      </>
+                    )}
+                  </Button>
+                </form>
+              </div>
+            </motion.div>
+
+            {/* Contact Info */}
+            <motion.div
+              initial={{ opacity: 0, x: isRTL ? -50 : 50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              className={isRTL ? 'lg:col-start-1' : ''}
+            >
+              <h2 className="text-3xl font-bold text-slate-900 mb-8">
+                {t.contact.infoTitle}
+              </h2>
+
+              <div className="space-y-6 mb-10">
+                <div className={`flex items-start gap-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                  <div className="w-14 h-14 bg-blue-100 rounded-xl flex items-center justify-center shrink-0">
+                    <MapPin className="w-6 h-6 text-blue-600" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-slate-900 mb-1">
+                      {t.contact.addressTitle}
+                    </h3>
+                    <p className="text-slate-600">{t.contact.address}</p>
+                  </div>
+                </div>
+
+                <div className={`flex items-start gap-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                  <div className="w-14 h-14 bg-green-100 rounded-xl flex items-center justify-center shrink-0">
+                    <Phone className="w-6 h-6 text-green-600" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-slate-900 mb-1">
+                      {t.contact.phoneTitle}
+                    </h3>
+                    <a href="tel:+963958481929" className="text-slate-600 hover:text-blue-600 block" dir="ltr">
+                      +963 958 481 929
+                    </a>
+                    <a href="tel:+963214734347" className="text-slate-600 hover:text-blue-600 block" dir="ltr">
+                      +963 214 734 347
+                    </a>
+                  </div>
+                </div>
+
+                <div className={`flex items-start gap-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                  <div className="w-14 h-14 bg-orange-100 rounded-xl flex items-center justify-center shrink-0">
+                    <Mail className="w-6 h-6 text-orange-600" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-slate-900 mb-1">
+                      {t.contact.emailTitle}
+                    </h3>
+                    <a href="mailto:info@skafix.com" className="text-slate-600 hover:text-blue-600">
+                      info@skafix.com
+                    </a>
+                  </div>
+                </div>
+
+                <div className={`flex items-start gap-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                  <div className="w-14 h-14 bg-purple-100 rounded-xl flex items-center justify-center shrink-0">
+                    <Clock className="w-6 h-6 text-purple-600" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-slate-900 mb-1">
+                      {t.contact.hoursTitle}
+                    </h3>
+                    <p className="text-slate-600">{t.contact.hours}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* WhatsApp Button */}
+              <a
+                href={whatsappLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`flex items-center gap-3 p-4 bg-green-50 border-2 border-green-200 rounded-2xl hover:bg-green-100 transition-colors ${isRTL ? 'flex-row-reverse' : ''}`}
+              >
+                <div className="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center">
+                  <MessageCircle className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-green-700">
+                    {isRTL ? 'تواصل عبر واتساب' : 'Chat on WhatsApp'}
+                  </h3>
+                  <p className="text-sm text-green-600">
+                    {isRTL ? 'رد سريع خلال ساعات العمل' : 'Quick response during business hours'}
+                  </p>
+                </div>
+              </a>
+
+              {/* Map */}
+              <div className="mt-10 rounded-2xl overflow-hidden h-64 bg-slate-100">
+                <iframe
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3305.9477446869743!2d37.16361487554614!3d36.17847227238943!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x152ff7b8c4c4c4c5%3A0x1234567890abcdef!2sSKAFIX!5e0!3m2!1sen!2s!4v1704470400000"
+                  width="100%"
+                  height="100%"
+                  style={{ border: 0 }}
+                  allowFullScreen=""
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                />
+              </div>
+              <a
+                href="https://maps.app.goo.gl/eH9JpoTW2vSMwpki8"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`mt-4 flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium ${isRTL ? 'flex-row-reverse' : ''}`}
+              >
+                <MapPin className="w-4 h-4" />
+                <span>{isRTL ? 'عرض على خرائط جوجل' : 'View on Google Maps'}</span>
+              </a>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section className="py-24 bg-slate-50">
+        <div className="max-w-3xl mx-auto px-4">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-4xl font-bold text-slate-900 mb-4">
+              {t.contact.faqTitle}
+            </h2>
+          </motion.div>
+
+          <div className="space-y-4">
+            {faqs.map((faq, idx) => (
+              <motion.div
+                key={idx}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: idx * 0.05 }}
+                className="bg-white rounded-2xl shadow-md overflow-hidden"
+              >
+                <button
+                  onClick={() => setOpenFaq(openFaq === idx ? null : idx)}
+                  className={`w-full flex items-center justify-between p-6 text-left ${isRTL ? 'flex-row-reverse text-right' : ''}`}
+                >
+                  <span className="text-lg font-semibold text-slate-900 pr-4">{faq.q}</span>
+                  {openFaq === idx ? (
+                    <ChevronUp className="w-5 h-5 text-blue-600 shrink-0" />
+                  ) : (
+                    <ChevronDown className="w-5 h-5 text-slate-400 shrink-0" />
+                  )}
+                </button>
+                <AnimatePresence>
+                  {openFaq === idx && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <div className="px-6 pb-6 text-slate-600 leading-relaxed">
+                        {faq.a}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}
